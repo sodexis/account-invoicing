@@ -3,6 +3,7 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools import config
+from odoo.tools.sql import column_exists, create_column
 
 
 class AccountMove(models.Model):
@@ -19,6 +20,13 @@ class AccountMove(models.Model):
         precompute=True,
         copy=True,
     )
+
+    def _auto_init(self):
+        if not column_exists(self.env.cr, "account_move", "pricelist_id"):
+            create_column(
+                self.env.cr, "account_move", "pricelist_id", "int4"
+            )
+        return super()._auto_init()
 
     @api.constrains("pricelist_id", "currency_id")
     def _check_currency(self):
